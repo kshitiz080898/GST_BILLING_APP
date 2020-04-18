@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CRUD Example</title>
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular-resource.js"></script>
+<script>
+var app=angular.module('myApp',[]);
+app.controller('myCtrl',function($scope,$http)
+		{
+    $scope.myform=false;
+	$scope.products=[];
+    $scope.myForm='false';
+    $scope.totalprice=0;
+	 $scope.refreshdata=function(){
+	 	$http.get("/api/product").then(function(response)
+		{
+			$scope.products=response.data;
+		});
+	 }
+	 
+	   $scope.product = {
+    productForm: [{
+        product_code:0,
+        product_name:"",
+        product_price:0,
+        product_gst:0
+    }]
+  };
+    $scope.set=function(quantity)
+    {
+        $scope.quantity=quantity;
+    }
+    $scope.form=function()
+    {
+        $scope.myForm=!$scope.myForm;
+    }
+  $scope.add = function(product){
+   
+    $scope.product.productForm.push(product);
+  },
+    $scope.total = function(){
+    var total = 0;
+    angular.forEach($scope.product.productForm,function(product){
+         if(product.product_code!=0 )
+        total= total+(product.product_price + (product.product_price * product.product_gst)/100)* product.quantity;
+    })
+    return total;
+  }
+  $scope.showTable = function () {
+    $('#table').fadeIn()
+ }
+   $scope.showTotal = function () {
+    $('#total').fadeIn()
+ }
+		})
+</script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body ng-app="myApp" ng-controller="myCtrl">
+	</br>
+	</br>
+	<h2>Search Product</h2></br>
+    <input type="text" ng-model="code"  ng-focus="refreshdata()">
+    <p ng-repeat="product in products" ng-show="product.product_code==code || product.product_name==code"></br>
+    
+    <button ng-click="add(product);showTable();showTotal()">Add Product</button></p>
+                    <table class="table table-striped" id="table" style="display:none">
+                            <tr>
+						<th>Product Name</th>
+						<th>Product Price</th>
+						<th>Product GST(%)</th>
+						<th>Quantity</th>
+						<th>Gross Price(in Rs) Before GST</th>
+						<th>Total Price(in Rs) After GST</th>
+						<th></th>
+					</tr>
+                             <tbody>
+                            <tr ng-repeat="product in product.productForm" ng-show="product.product_code!=0">
+                              
+                                <td>{{product.product_name}}</td>
+                                <td>{{product.product_price}}</td>
+                                <td>{{product.product_gst}}</td>
+                                <td><input type="number" ng-model="product.quantity" ng-init="product.quantity=1" ></td>
+						         <td>Rs {{ product.product_price * product.quantity }}</td>
+						<td >Rs {{(product.product_price + (product.product_price * product.product_gst)/100)*product.quantity}}</td>  
+                                
+                                
+					</tr>
+                        <tr  id="total" style="display:none">
+                             <td ></td>
+                             <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><b>Total:</b></td>
+                            <td>Rs {{ total() }}</td>
+                        </tr>
+                        </tbody>
+				</table>
+		
+
+</body>
+</html>
